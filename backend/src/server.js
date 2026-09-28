@@ -6,7 +6,7 @@ import { sequelize } from './models/index.js';
 
 dotenv.config();
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 
 // ── HTTP Server ───────────────────────────────────────────────────────────────
 const httpServer = http.createServer(app);
@@ -23,16 +23,20 @@ const io = new Server(httpServer, {
 const start = async () => {
   try {
     await sequelize.authenticate();
-    console.log(' Database connected');
+    console.log('✅ Database connected to Supabase PostgreSQL');
+    
+    // Automatically create/sync tables in database
+    await sequelize.sync();
+    console.log('✅ Database models synchronized');
   } catch (err) {
-    console.warn('  Database not connected:', err.message);
-    console.warn('  Server start — DB-dependent routes may fail.');
+    console.warn('⚠️  Database connection warning:', err.message);
+    console.warn('   Make sure DATABASE_URL is set in backend/.env with your Supabase database password.');
   }
 
   httpServer.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`Socket.io ready`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`🔌 Socket.io ready`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 };
 
