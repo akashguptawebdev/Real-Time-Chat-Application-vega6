@@ -148,3 +148,94 @@ export const getMe = async (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// @route   POST /api/auth/google
+// @access  Public
+// ─────────────────────────────────────────────────────────────────────────────
+export const googleAuth = async (req, res) => {
+  try {
+    const { credential, accessToken: googleAccessToken } = req.body;
+    let email, name, picture;
+
+    if (credential) {
+      // ID Token flow
+      const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
+      const payload = await response.json();
+      if (!response.ok || payload.error) {
+        return res.status(401).json({ message: payload.error_description || 'Invalid Google credential' });
+      }
+      email = payload.email;
+      name = payload.name;
+      picture = payload.picture;
+    } else if (googleAccessToken) {
+      // Access Token flow
+      const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${googleAccessToken}` },
+      });
+      const payload = await response.json();
+      if (!response.ok || payload.error) {
+        return res.status(401).json({ message: payload.error_description || 'Invalid Google access token' });
+      }
+      email = payload.email;
+      name = payload.name;
+      picture = payload.picture;
+    } else {
+      return res.status(400).json({ message: 'Google credential or access token is required' });
+    }
+
+    if (!email) {
+      return res.status(400).json({ message: 'No email found in Google account' });
+    }
+
+    // Check if user already exists
+    let user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      // Create user if not registered
+      const randomPassword = crypto.randomBytes(32).toString('hex');
+      const passwordHash = await bcrypt.hash(randomPassword, 12);
+
+      user = await User.create({
+        name: name || email.split('@')[0],
+        email,
+        passwordHash,
+        avatarUrl: picture || null,
+      });
+    } else {
+      // Update avatar if not present, and update lastSeenAt
+      const updateData = { lastSeenAt: new Date() };
+      if (!user.avatarUrl && picture) {
+        updateData.avatarUrl = picture;
+      }
+      await user.update(updateData);
+    }
+
+    // Sign tokens
+    const accessToken = signAccessToken({ userId: user.id, email: user.email });
+    const refreshToken = signRefreshToken({ userId: user.id });
+
+    await RefreshToken.create({
+      userId: user.id,
+      tokenHash: hashToken(refreshToken),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    setRefreshCookie(res, refreshToken);
+
+    return res.status(200).json({
+      message: 'Authenticated with Google successfully',
+      accessToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+      },
+    });
+  } catch (err) {
+    console.error('googleAuth error:', err);
+    return res.status(500).json({ message: err.message || 'Internal server error' });
+  }
+};
+

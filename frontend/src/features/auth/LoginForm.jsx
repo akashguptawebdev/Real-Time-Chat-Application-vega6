@@ -14,6 +14,7 @@ import api from '../../lib/api.js'
 import { AuthLayout }  from './components/index.js'
 import FormField       from '../../components/ui/FormField.jsx'
 import ErrorAlert      from '../../components/ui/ErrorAlert.jsx'
+import GoogleSignInButton from '../../components/ui/GoogleSignInButton.jsx'
 
 export default function LoginForm() {
   const navigate = useNavigate()
@@ -23,7 +24,7 @@ export default function LoginForm() {
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
 
-  const handleChange  = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -37,6 +38,18 @@ export default function LoginForm() {
       setError(err.response?.data?.message || 'Login failed. Please try again.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGoogleSuccess = async (authData) => {
+    setError('')
+    try {
+      const { data } = await api.post('/auth/google', authData)
+      localStorage.setItem('accessToken', data.accessToken)
+      navigate('/chat')
+    } catch (err) {
+      console.error('Google auth failed:', err)
+      setError(err.response?.data?.message || 'Google sign-in failed. Please try again.')
     }
   }
 
@@ -126,21 +139,11 @@ export default function LoginForm() {
 
           <Divider sx={{ color: '#94a3b8', fontSize: 13 }}>or</Divider>
 
-          {/* Google */}
-          <Button
-            fullWidth variant="outlined"
-            startIcon={
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                width={18} height={18} alt="Google" />
-            }
-            sx={{
-              borderColor: '#e2e8f0', color: '#374151', borderRadius: 2,
-              py: 1.3, fontSize: 14, fontWeight: 600, textTransform: 'none',
-              bgcolor: '#fff', '&:hover': { bgcolor: '#f1f5f9', borderColor: '#cbd5e1' },
-            }}
-          >
-            Continue with Google
-          </Button>
+          {/* Real Working Google Sign-In */}
+          <GoogleSignInButton
+            onCredentialResponse={handleGoogleSuccess}
+            text="continue_with"
+          />
 
         </Stack>
       </form>
