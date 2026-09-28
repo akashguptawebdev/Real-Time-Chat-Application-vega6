@@ -1,26 +1,10 @@
-import { useState, useEffect } from 'react'
-import api from '../lib/api.js'
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext.jsx';
 
 export function useAuth() {
-  const [user, setUser]       = useState(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken')
-    if (!token) { setLoading(false); return }
-
-    api.get('/auth/me')
-      .then(({ data }) => setUser(data.user))
-      .catch(() => { localStorage.removeItem('accessToken'); setUser(null) })
-      .finally(() => setLoading(false))
-  }, [])
-
-  const logout = async () => {
-    await api.post('/auth/logout').catch(() => {})
-    localStorage.removeItem('accessToken')
-    setUser(null)
-    window.location.href = '/login'
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-
-  return { user, setUser, loading, logout }
+  return context;
 }

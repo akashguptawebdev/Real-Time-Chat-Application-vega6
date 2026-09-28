@@ -15,9 +15,11 @@ import { AuthLayout }  from './components/index.js'
 import FormField       from '../../components/ui/FormField.jsx'
 import ErrorAlert      from '../../components/ui/ErrorAlert.jsx'
 import GoogleSignInButton from '../../components/ui/GoogleSignInButton.jsx'
+import { useAuth } from '../../hooks/useAuth.js'
 
 export default function LoginForm() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [form, setForm]         = useState({ email: '', password: '' })
   const [showPass, setShowPass] = useState(false)
   const [remember, setRemember] = useState(false)
@@ -32,7 +34,7 @@ export default function LoginForm() {
     setLoading(true)
     try {
       const { data } = await api.post('/auth/login', form)
-      localStorage.setItem('accessToken', data.accessToken)
+      login(data.accessToken, data.user)
       navigate('/chat')
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.')
@@ -45,7 +47,7 @@ export default function LoginForm() {
     setError('')
     try {
       const { data } = await api.post('/auth/google', authData)
-      localStorage.setItem('accessToken', data.accessToken)
+      login(data.accessToken, data.user)
       navigate('/chat')
     } catch (err) {
       console.error('Google auth failed:', err)

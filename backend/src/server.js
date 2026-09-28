@@ -3,6 +3,7 @@ import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import app from './app.js';
 import { sequelize } from './models/index.js';
+import { initSocket } from './socket/index.js';
 
 dotenv.config();
 
@@ -18,6 +19,9 @@ const io = new Server(httpServer, {
     credentials: true,
   },
 });
+
+app.set('io', io);
+initSocket(io);
 
 // ── Start Server ──────────────────────────────────────────────────────────────
 const start = async () => {

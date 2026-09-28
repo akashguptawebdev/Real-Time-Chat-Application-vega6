@@ -3,6 +3,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes.js';
+import userRoutes from './routes/user.routes.js';
+import conversationRoutes from './routes/conversation.routes.js';
 
 dotenv.config();
 
@@ -22,6 +24,8 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/conversations', conversationRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });

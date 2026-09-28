@@ -16,6 +16,7 @@ import { AuthLayout } from './components/index.js'
 import FormField    from '../../components/ui/FormField.jsx'
 import ErrorAlert   from '../../components/ui/ErrorAlert.jsx'
 import GoogleSignInButton from '../../components/ui/GoogleSignInButton.jsx'
+import { useAuth } from '../../hooks/useAuth.js'
 
 // ── Password strength helper ──────────────────────────────────────────────────
 const getStrength = (pwd) => {
@@ -62,6 +63,7 @@ function PasswordStrengthBar({ password }) {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function SignupForm() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [form, setForm]             = useState({ name: '', email: '', password: '', confirm: '' })
   const [showPass, setShowPass]     = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -88,7 +90,7 @@ export default function SignupForm() {
         email:    form.email,
         password: form.password,
       })
-      localStorage.setItem('accessToken', data.accessToken)
+      login(data.accessToken, data.user)
       navigate('/chat')
     } catch (err) {
       setError(err.response?.data?.message || 'Signup failed. Please try again.')
@@ -101,7 +103,7 @@ export default function SignupForm() {
     setError('')
     try {
       const { data } = await api.post('/auth/google', authData)
-      localStorage.setItem('accessToken', data.accessToken)
+      login(data.accessToken, data.user)
       navigate('/chat')
     } catch (err) {
       console.error('Google auth failed:', err)
