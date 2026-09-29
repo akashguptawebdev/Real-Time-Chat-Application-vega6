@@ -33,7 +33,7 @@ export default function AuthLeftPanel() {
         borderRadius: '50%', background: 'rgba(99,102,241,0.10)' }} />
 
       {/* Logo */}
-      <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <IconBox bg="rgba(99,102,241,0.3)" color="#818cf8" size={36}>
           <ChatBubbleOutlinedIcon sx={{ fontSize: 20 }} />
         </IconBox>

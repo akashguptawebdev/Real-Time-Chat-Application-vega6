@@ -48,11 +48,11 @@ A full-featured real-time chat application built with React, Node.js, Socket.io,
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 18 + Vite + Tailwind CSS v4 |
+| Frontend | React + Vite + Tailwind CSS |
 | Backend | Node.js + Express |
 | Real-time | Socket.io |
-| Database | PostgreSQL (Supabase or local) |
-| ORM | Sequelize |
+| Database | PostgreSQL (Supabase) |
+| Sequelize |
 | Auth | JWT (access token in localStorage, refresh token in httpOnly cookie) |
 
 ---
@@ -81,14 +81,12 @@ cd ../frontend && npm install
 #### Backend — `backend/.env`
 
 ```env
-# PostgreSQL connection (use one of these two options)
-DATABASE_URL=postgresql://postgres:<password>@<host>:5432/<dbname>
-# OR individual fields:
-# DB_HOST=localhost
-# DB_PORT=5432
-# DB_USER=postgres
-# DB_PASSWORD=your_password
-# DB_NAME=chat_app_dev
+# PostgreSQL connection
+DB_HOST=aws-0-ap-northeast-1.pooler.supabase.com
+DB_PORT=5432
+DB_NAME=postgres
+DB_USER=postgres.qcdqqkhqylkcicxmqblk
+DB_PASSWORD=
 
 # JWT secrets (generate with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))")
 JWT_ACCESS_SECRET=your_access_secret_here

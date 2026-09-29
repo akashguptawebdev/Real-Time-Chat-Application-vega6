@@ -18,11 +18,11 @@ export function useSocket(token) {
       return;
     }
 
-    // Connect to server (using Vite proxy or direct host)
+    // Connect to server (polling first for robust handshake, then upgrade to websocket)
     const socket = io('/', {
       auth: { token },
-      transports: ['websocket', 'polling'],
-      reconnectionAttempts: 5,
+      transports: ['polling', 'websocket'],
+      reconnectionAttempts: 10,
     });
 
     socketRef.current = socket;

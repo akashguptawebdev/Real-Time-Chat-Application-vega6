@@ -49,6 +49,9 @@ export default function GroupDetailsModal({
   // Action in progress
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
+  // Delete group confirmation
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   const loadDetails = async () => {
     if (!groupId) return;
     setLoading(true);
@@ -184,7 +187,6 @@ export default function GroupDetailsModal({
   };
 
   // Delete group
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const handleDeleteGroup = async () => {
     if (!confirmDelete) {
       setConfirmDelete(true);
