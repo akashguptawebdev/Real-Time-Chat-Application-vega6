@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button, CircularProgress } from '@mui/material'
 
-const GOOGLE_CLIENT_ID = '627956378406-lnomh4ap4ummcrr7ljrblkekv3adus6f.apps.googleusercontent.com'
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '627956378406-lnomh4ap4ummcrr7ljrblkekv3adus6f.apps.googleusercontent.com'
 
 export default function GoogleSignInButton({ onCredentialResponse, text = 'continue_with' }) {
   const [loading, setLoading] = useState(false)

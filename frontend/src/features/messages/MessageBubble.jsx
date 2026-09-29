@@ -75,6 +75,17 @@ export default function MessageBubble({
   const isRead = message.readAt;
   const showReadStatus = conversationType === 'direct' && isMine && !isDeleted;
 
+  const resolveFileUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) {
+      return url;
+    }
+    const backendBase = import.meta.env.VITE_SOCKET_URL || '';
+    return `${backendBase}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+
+  const resolvedFileUrl = resolveFileUrl(message.fileUrl);
+
   const isImage = message.messageType === 'image' || (message.fileMimeType && message.fileMimeType.startsWith('image/'));
   const isFile = message.messageType === 'file' || (message.fileUrl && !isImage);
 
@@ -230,7 +241,7 @@ export default function MessageBubble({
                   className="cursor-pointer group/img relative rounded-xl overflow-hidden max-w-sm max-h-80 bg-black/20"
                 >
                   <img
-                    src={message.fileUrl}
+                    src={resolvedFileUrl}
                     alt={message.fileName || 'Shared image'}
                     className="w-full h-full object-cover rounded-xl hover:opacity-95 transition-opacity"
                     loading="lazy"
@@ -265,7 +276,7 @@ export default function MessageBubble({
                 }`}
               >
                 <a
-                  href={message.fileUrl}
+                  href={resolvedFileUrl}
                   download={message.fileName || 'download'}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -379,7 +390,7 @@ export default function MessageBubble({
           >
             <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
               <a
-                href={message.fileUrl}
+                href={resolvedFileUrl}
                 download={message.fileName || 'image'}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -398,7 +409,7 @@ export default function MessageBubble({
             </div>
 
             <img
-              src={message.fileUrl}
+              src={resolvedFileUrl}
               alt={message.fileName || 'Shared image'}
               className="max-w-full max-h-[82vh] object-contain rounded-2xl shadow-2xl"
             />

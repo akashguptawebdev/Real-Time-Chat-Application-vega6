@@ -5,11 +5,13 @@ import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../config
 
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const setRefreshCookie = (res, token) => {
   res.cookie('refreshToken', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
@@ -128,7 +130,11 @@ export const logout = async (req, res) => {
         { where: { tokenHash: hashToken(token), revokedAt: null } }
       );
     }
-    res.clearCookie('refreshToken', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+    });
     return res.status(200).json({ message: 'Logged out successfully' });
   } catch (err) {
     console.error('logout error:', err);

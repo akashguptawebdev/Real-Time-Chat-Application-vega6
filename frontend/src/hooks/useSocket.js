@@ -19,7 +19,8 @@ export function useSocket(token) {
     }
 
     // Connect to server (polling first for robust handshake, then upgrade to websocket)
-    const socket = io('/', {
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || '/';
+    const socket = io(socketUrl, {
       auth: { token },
       transports: ['polling', 'websocket'],
       reconnectionAttempts: 10,
