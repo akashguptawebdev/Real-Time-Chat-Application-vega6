@@ -3,3 +3,77 @@
 *, *::before, *::after {
   box-sizing: border-box;
 }
+
+/* ── Light Mode Token Overrides ─────────────────────────────────────────── */
+html.light {
+  --color-slate-950: #f8fafc;
+  --color-slate-900: #ffffff;
+  --color-slate-800: #f1f5f9;
+  --color-slate-700: #e2e8f0;
+  --color-slate-600: #cbd5e1;
+  --color-slate-500: #94a3b8;
+  --color-slate-400: #64748b;
+  --color-slate-300: #475569;
+  --color-slate-200: #334155;
+  --color-slate-100: #0f172a;
+  --color-slate-50:  #020617;
+  color-scheme: light;
+}
+
+html.light body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* Light mode text contrast adjustments */
+html.light .text-white {
+  color: #0f172a;
+}
+
+/* Maintain crisp white text on solid colored accents */
+html.light .bg-indigo-600,
+html.light .bg-indigo-500,
+html.light .bg-indigo-700,
+html.light .bg-red-600,
+html.light .bg-red-500,
+html.light [class*="bg-indigo-600"],
+html.light [class*="bg-indigo-500"],
+html.light [class*="bg-gradient-to-r from-indigo-600"],
+html.light .rounded-br-sm.text-white {
+  color: #ffffff !important;
+}
+
+html.light .bg-indigo-600 .text-white,
+html.light .bg-indigo-500 .text-white,
+html.light .bg-gradient-to-r .text-white,
+html.light button.bg-indigo-600,
+html.light button.bg-indigo-600 * {
+  color: #ffffff !important;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.45);
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.25);
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.45);
+}

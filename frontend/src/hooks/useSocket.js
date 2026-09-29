@@ -5,6 +5,8 @@ export function useSocket(token) {
   const socketRef = useRef(null);
   const [isConnected, setIsConnected] = useState(false);
   const [onlineUserIds, setOnlineUserIds] = useState(new Set());
+  // Map of userId -> lastSeenAt date (populated when a user goes offline)
+  const [lastSeenMap, setLastSeenMap] = useState(new Map());
 
   useEffect(() => {
     if (!token) {
@@ -33,17 +35,32 @@ export function useSocket(token) {
       setIsConnected(false);
     });
 
+    socket.on('connect_error', (err) => {
+      console.warn('Socket handshake authentication failed:', err.message);
+      setIsConnected(false);
+    });
+
+    // Receive full list of currently online users when first connecting
     socket.on('users:online_list', (userIds) => {
       setOnlineUserIds(new Set(userIds));
     });
 
-    socket.on('user:status', ({ userId, status }) => {
+    // Presence updates (online/offline with lastSeenAt for offline)
+    socket.on('user:status', ({ userId, status, lastSeenAt }) => {
       setOnlineUserIds((prev) => {
         const next = new Set(prev);
         if (status === 'online') {
           next.add(userId);
         } else {
           next.delete(userId);
+          // Record lastSeenAt for the user who went offline
+          if (lastSeenAt) {
+            setLastSeenMap((prev) => {
+              const next = new Map(prev);
+              next.set(userId, lastSeenAt);
+              return next;
+            });
+          }
         }
         return next;
       });
@@ -77,6 +94,7 @@ export function useSocket(token) {
     socket: socketRef.current,
     isConnected,
     onlineUserIds,
+    lastSeenMap,
     joinConversation,
     leaveConversation,
     emitTyping,

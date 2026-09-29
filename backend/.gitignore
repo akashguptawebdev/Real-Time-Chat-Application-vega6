@@ -38,3 +38,6 @@ coverage/
 # Misc
 *.pem
 *.key
+
+# Uploads
+uploads/

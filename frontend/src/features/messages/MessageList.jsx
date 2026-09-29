@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import MessageBubble from './MessageBubble.jsx';
 import Avatar from '../../components/ui/Avatar.jsx';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -6,15 +6,65 @@ import CircularProgress from '@mui/material/CircularProgress';
 export default function MessageList({
   messages = [],
   loading,
+  loadingMore,
+  hasMore,
+  onLoadMore,
   currentUserId,
   otherUser,
   isTyping,
+  conversationId,
+  conversationType = 'direct',
+  activeMembers = [],
+  onEditMessage,
+  onDeleteMessage,
+  onReactMessage,
 }) {
   const bottomRef = useRef(null);
+  const topSentinelRef = useRef(null);
+  const containerRef = useRef(null);
+  const prevScrollHeightRef = useRef(0);
+
+  // Auto-scroll to bottom on first load or new messages (not when loading older ones)
+  useEffect(() => {
+    if (!loadingMore) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages.length, isTyping, loadingMore]);
+
+  // Preserve scroll position when older messages are prepended
+  useEffect(() => {
+    if (!loadingMore && containerRef.current) {
+      const prevHeight = prevScrollHeightRef.current;
+      if (prevHeight > 0) {
+        containerRef.current.scrollTop = containerRef.current.scrollHeight - prevHeight;
+        prevScrollHeightRef.current = 0;
+      }
+    }
+  }, [messages, loadingMore]);
+
+  // IntersectionObserver for infinite scroll upward
+  const handleTopSentinel = useCallback(
+    (entries) => {
+      if (entries[0].isIntersecting && hasMore && !loadingMore && onLoadMore) {
+        if (containerRef.current) {
+          prevScrollHeightRef.current = containerRef.current.scrollHeight;
+        }
+        onLoadMore();
+      }
+    },
+    [hasMore, loadingMore, onLoadMore]
+  );
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+    const sentinel = topSentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(handleTopSentinel, {
+      root: containerRef.current,
+      threshold: 0.1,
+    });
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [handleTopSentinel]);
 
   if (loading) {
     return (
@@ -31,11 +81,7 @@ export default function MessageList({
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
         <div className="mb-4">
-          <Avatar
-            name={otherUser?.name || 'User'}
-            src={otherUser?.avatarUrl}
-            size="xl"
-          />
+          <Avatar name={otherUser?.name || 'Conversation'} src={otherUser?.avatarUrl} size="xl" />
         </div>
         <h3 className="text-lg font-bold text-white mb-1">
           {otherUser?.name ? `Chat with ${otherUser.name}` : 'New Conversation'}
@@ -51,16 +97,21 @@ export default function MessageList({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1">
+    <div ref={containerRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1">
+      {/* Top sentinel — triggers load of older messages */}
+      <div ref={topSentinelRef} className="flex justify-center py-1">
+        {loadingMore ? (
+          <CircularProgress size={18} sx={{ color: '#818cf8' }} />
+        ) : hasMore ? (
+          <span className="text-[11px] text-slate-500 italic">Scroll up for more</span>
+        ) : null}
+      </div>
+
       {messages.map((message, index) => {
         const isMine = message.senderId === currentUserId;
         const prevMessage = messages[index - 1];
         const nextMessage = messages[index + 1];
-
-        // Only show avatar on last message of a consecutive group from same sender
         const isLastInGroup = !nextMessage || nextMessage.senderId !== message.senderId;
-
-        // Check if date changed between messages
         const showDateSeparator =
           !prevMessage ||
           new Date(prevMessage.created_at).toDateString() !==
@@ -85,6 +136,13 @@ export default function MessageList({
               isMine={isMine}
               showAvatar={isLastInGroup}
               otherUser={otherUser}
+              conversationId={conversationId}
+              conversationType={conversationType}
+              currentUserId={currentUserId}
+              activeMembers={activeMembers}
+              onEdit={onEditMessage}
+              onDelete={onDeleteMessage}
+              onReact={onReactMessage}
             />
           </div>
         );
