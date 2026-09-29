@@ -1,6 +1,11 @@
 import axios from 'axios'
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || '/api'
+let baseURL = import.meta.env.VITE_API_BASE_URL || '/api'
+
+// Prevent mixed-content errors when page is loaded over HTTPS
+if (typeof window !== 'undefined' && window.location.protocol === 'https:' && baseURL.startsWith('http://')) {
+  baseURL = baseURL.replace(/^http:\/\//i, 'https://')
+}
 
 const api = axios.create({
   baseURL,

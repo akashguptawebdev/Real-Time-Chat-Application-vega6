@@ -19,7 +19,10 @@ export function useSocket(token) {
     }
 
     // Connect to server (polling first for robust handshake, then upgrade to websocket)
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || '/';
+    let socketUrl = import.meta.env.VITE_SOCKET_URL || '/';
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:' && socketUrl.startsWith('http://')) {
+      socketUrl = socketUrl.replace(/^http:\/\//i, 'https://');
+    }
     const socket = io(socketUrl, {
       auth: { token },
       transports: ['polling', 'websocket'],
